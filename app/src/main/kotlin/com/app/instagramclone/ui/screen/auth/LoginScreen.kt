@@ -1,5 +1,6 @@
 package com.app.instagramclone.ui.screen.auth
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,12 +28,14 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.app.instagramclone.presentation.auth.AuthUiState
 import com.app.instagramclone.presentation.auth.AuthViewModel
+import com.app.instagramclone.ui.theme.InstagramCloneTheme
 
 @Composable
 fun LoginScreen(
@@ -39,7 +43,6 @@ fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
     var username by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(uiState) {
@@ -49,6 +52,21 @@ fun LoginScreen(
         }
     }
 
+    LoginScreenContent(
+        username = username,
+        uiState = uiState,
+        onUsernameChange = { username = it },
+        onLoginClick = { viewModel.login(username) }
+    )
+}
+
+@Composable
+fun LoginScreenContent(
+    username: String,
+    uiState: AuthUiState,
+    onUsernameChange: (String) -> Unit,
+    onLoginClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -68,7 +86,7 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = username,
-            onValueChange = { username = it },
+            onValueChange = onUsernameChange,
             label = { Text("Nome de usuário") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(
@@ -82,7 +100,7 @@ fun LoginScreen(
 
         if (uiState is AuthUiState.Error) {
             Text(
-                text = (uiState as AuthUiState.Error).message,
+                text = uiState.message,
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -92,7 +110,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
-            onClick = { viewModel.login(username) },
+            onClick = onLoginClick,
             enabled = uiState !is AuthUiState.Loading,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -105,6 +123,52 @@ fun LoginScreen(
             } else {
                 Text("Entrar")
             }
+        }
+    }
+}
+
+@Preview(name = "Login — Light", showBackground = true)
+@Preview(name = "Login — Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun LoginScreenIdlePreview() {
+    InstagramCloneTheme {
+        Surface {
+            LoginScreenContent(
+                username = "",
+                uiState = AuthUiState.Idle,
+                onUsernameChange = {},
+                onLoginClick = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "Login — Carregando", showBackground = true)
+@Composable
+private fun LoginScreenLoadingPreview() {
+    InstagramCloneTheme {
+        Surface {
+            LoginScreenContent(
+                username = "pether",
+                uiState = AuthUiState.Loading,
+                onUsernameChange = {},
+                onLoginClick = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "Login — Erro", showBackground = true)
+@Composable
+private fun LoginScreenErrorPreview() {
+    InstagramCloneTheme {
+        Surface {
+            LoginScreenContent(
+                username = "pether",
+                uiState = AuthUiState.Error("Usuário não encontrado"),
+                onUsernameChange = {},
+                onLoginClick = {}
+            )
         }
     }
 }
