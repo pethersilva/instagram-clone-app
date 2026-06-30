@@ -18,14 +18,14 @@ class AuthViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    fun login(username: String, password: String) {
-        if (username.isBlank() || password.isBlank()) {
-            _uiState.value = AuthUiState.Error("Preencha usuário e senha")
+    fun login(username: String) {
+        if (username.isBlank()) {
+            _uiState.value = AuthUiState.Error("Preencha o nome de usuário")
             return
         }
         viewModelScope.launch {
             _uiState.value = AuthUiState.Loading
-            authRepository.login(username, password)
+            authRepository.login(username)
                 .onSuccess { _uiState.value = AuthUiState.Success }
                 .onFailure { _uiState.value = AuthUiState.Error(it.message ?: "Erro ao fazer login") }
         }

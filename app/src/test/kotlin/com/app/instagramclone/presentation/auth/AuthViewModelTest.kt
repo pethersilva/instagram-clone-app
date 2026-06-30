@@ -33,12 +33,12 @@ class AuthViewModelTest {
 
     @Test
     fun `login com sucesso emite Loading depois Success`() = runTest {
-        coEvery { authRepository.login(any(), any()) } returns Result.success(Unit)
+        coEvery { authRepository.login(any()) } returns Result.success(Unit)
 
         viewModel.uiState.test {
             assertEquals(AuthUiState.Idle, awaitItem())
 
-            viewModel.login("usuario", "senha123")
+            viewModel.login("usuario")
 
             assertEquals(AuthUiState.Loading, awaitItem())
             assertEquals(AuthUiState.Success, awaitItem())
@@ -48,13 +48,13 @@ class AuthViewModelTest {
 
     @Test
     fun `login com falha emite Loading depois Error`() = runTest {
-        coEvery { authRepository.login(any(), any()) } returns
+        coEvery { authRepository.login(any()) } returns
             Result.failure(Exception("Credenciais inválidas"))
 
         viewModel.uiState.test {
             assertEquals(AuthUiState.Idle, awaitItem())
 
-            viewModel.login("usuario", "senhaErrada")
+            viewModel.login("usuario")
 
             assertEquals(AuthUiState.Loading, awaitItem())
             val error = awaitItem()
@@ -65,23 +65,23 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun `login com campos vazios emite Error sem chamar repositorio`() = runTest {
+    fun `login com username vazio emite Error sem chamar repositorio`() = runTest {
         viewModel.uiState.test {
             assertEquals(AuthUiState.Idle, awaitItem())
 
-            viewModel.login("", "")
+            viewModel.login("")
 
             val error = awaitItem()
             assertTrue(error is AuthUiState.Error)
-            coVerify(exactly = 0) { authRepository.login(any(), any()) }
+            coVerify(exactly = 0) { authRepository.login(any()) }
             cancelAndIgnoreRemainingEvents()
         }
     }
 
     @Test
     fun `resetState volta para Idle`() = runTest {
-        coEvery { authRepository.login(any(), any()) } returns Result.success(Unit)
-        viewModel.login("usuario", "senha123")
+        coEvery { authRepository.login(any()) } returns Result.success(Unit)
+        viewModel.login("usuario")
 
         viewModel.resetState()
 

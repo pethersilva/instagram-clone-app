@@ -11,8 +11,8 @@ class AuthRepositoryImpl @Inject constructor(
     private val authDataStore: AuthDataStore
 ) : AuthRepository {
 
-    override suspend fun login(username: String, password: String): Result<Unit> = runCatching {
-        val response = api.login(LoginRequest(username, password))
+    override suspend fun login(username: String): Result<Unit> = runCatching {
+        val response = api.login(LoginRequest(username))
         authDataStore.saveToken(response.token)
         authDataStore.saveUserId(response.userId)
     }
